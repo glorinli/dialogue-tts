@@ -1,0 +1,14 @@
+{
+  "dialog_id": "david_lisa_weekend",
+  "speakers": [
+    {
+      "name": "David",
+      "gender": "male"
+    },
+    {
+      "name": "Lisa",
+      "gender": "female"
+    }
+  ],
+  "content": "David: Good morning Lisa! Lisa: Good morning David! David: How was your weekend? Lisa: It was wonderful, I went hiking in the mountains. David: That sounds amazing!"
+}

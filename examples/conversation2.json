@@ -1,0 +1,18 @@
+{
+  "dialog_id": "team_meeting_intro",
+  "speakers": [
+    {
+      "name": "Emma",
+      "gender": "female"
+    },
+    {
+      "name": "James",
+      "gender": "male"
+    },
+    {
+      "name": "Sophia",
+      "gender": "female"
+    }
+  ],
+  "content": "Emma: Welcome to our team meeting! James: Thanks Emma, I'm excited to be here. Sophia: Me too, this should be a productive session. Emma: Let's start with the agenda."
+}
