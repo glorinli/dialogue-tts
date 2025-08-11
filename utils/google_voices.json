@@ -1,0 +1,28 @@
+{
+    "voices": {
+        "male": [
+            {
+                "name": "en-US-male-David",
+                "tld": "com",
+                "description": "Canadian male voice"
+            },
+            {
+                "name": "en-US-male-Michael", 
+                "tld": "com",
+                "description": "Irish male voice"
+            }
+        ],
+        "female": [
+            {
+                "name": "en-US-female-Sarah", 
+                "tld": "com",
+                "description": "US female voice"
+            },
+            {
+                "name": "en-US-female-Emma",
+                "tld": "com",
+                "description": "Canadian female voice"
+            }
+        ]
+    }
+}

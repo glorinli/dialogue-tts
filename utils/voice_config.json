@@ -1,0 +1,8 @@
+{
+    "voice_mapping": {
+        "google": "google_voices.json",
+        "azure": "azure_voices.json",
+        "aws": "aws_voices.json"
+    },
+    "default_provider": "google"
+}

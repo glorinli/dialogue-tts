@@ -6,6 +6,10 @@ A Python tool to generate voice files for conversations with timing information.
 
 - Generate voice files from conversation text using multiple TTS providers
 - Currently supports Google Text-to-Speech (gTTS) with extensible architecture
+- **Advanced voice management** with three selection modes:
+  - **Fixed**: Each speaker gets a consistent voice across conversations
+  - **Random**: Random voice selection for each speaker
+  - **Gender-based**: Standard gender-appropriate voices
 - Support for multiple speakers with gender-based voice selection
 - Automatic parsing of conversation format
 - JSON output with timing information (start time, duration, index)
@@ -36,6 +40,11 @@ python main.py conversations/
 
 # Specify output directory and TTS settings
 python main.py conversation.json --output my_output --provider google --lang en
+
+# Use different voice selection modes
+python main.py conversation.json --voice-mode fixed    # Consistent voices per speaker
+python main.py conversation.json --voice-mode random   # Random voice selection
+python main.py conversation.json --voice-mode gender_based  # Gender-appropriate voices
 ```
 
 ### Programmatic Usage
@@ -43,11 +52,18 @@ python main.py conversation.json --output my_output --provider google --lang en
 ```python
 from dialogue_tts import DialogueTTS
 
-# Initialize the tool with default Google TTS provider
-tts_tool = DialogueTTS(output_dir="my_conversations")
+# Initialize with different voice modes
+tts_tool = DialogueTTS(output_dir="my_conversations", voice_mode="gender_based")  # Default
+tts_tool = DialogueTTS(output_dir="my_conversations", voice_mode="fixed")         # Consistent voices
+tts_tool = DialogueTTS(output_dir="my_conversations", voice_mode="random")        # Random voices
 
 # Or specify a different provider
 tts_tool = DialogueTTS(output_dir="my_conversations", tts_provider="google", lang="en")
+
+# Voice management features
+tts_tool.set_voice_mode("fixed")                    # Change voice mode
+tts_tool.add_custom_voice("female", "custom-voice") # Add custom voice
+tts_tool.clear_voice_cache()                        # Clear voice assignments
 
 # Define your conversation
 conversation = {

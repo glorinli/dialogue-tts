@@ -91,7 +91,7 @@ def process_single_conversation(tts_tool: DialogueTTS, conversation_data: Dict,
 
 
 def process_files(input_path: str, output_dir: str = "output", 
-                 tts_provider: str = "google", **tts_kwargs) -> List[Dict]:
+                 tts_provider: str = "google", **kwargs) -> List[Dict]:
     """Process all JSON files in the input path."""
     
     # Find all JSON files
@@ -103,7 +103,7 @@ def process_files(input_path: str, output_dir: str = "output",
         return []
     
     # Initialize TTS tool
-    tts_tool = DialogueTTS(output_dir=output_dir, tts_provider=tts_provider, **tts_kwargs)
+    tts_tool = DialogueTTS(output_dir=output_dir, tts_provider=tts_provider, **kwargs)
     
     # Show provider information
     provider_info = tts_tool.get_tts_provider_info()
@@ -201,6 +201,13 @@ Examples:
     )
     
     parser.add_argument(
+        '--voice-mode',
+        default='gender_based',
+        choices=['fixed', 'random', 'gender_based'],
+        help='Voice selection mode (default: gender_based)'
+    )
+    
+    parser.add_argument(
         '--verbose', '-v',
         action='store_true',
         help='Enable verbose output'
@@ -219,13 +226,19 @@ Examples:
         'tld': args.tld
     }
     
+    # Prepare voice management kwargs
+    voice_kwargs = {
+        'voice_mode': args.voice_mode
+    }
+    
     # Process files
     try:
         results = process_files(
             input_path=args.input,
             output_dir=args.output,
             tts_provider=args.provider,
-            **tts_kwargs
+            **tts_kwargs,
+            **voice_kwargs
         )
         
         if not results:

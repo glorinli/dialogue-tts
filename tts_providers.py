@@ -50,6 +50,14 @@ class GoogleTTSProvider(TTSProvider):
             lang = kwargs.get('lang', self.lang)
             tld = kwargs.get('tld', self.tld)
             
+            # Handle voice configuration
+            voice_config = kwargs.get('voice_config', {})
+            voice_name = voice_config.get('voice_name', 'default')
+            
+            # Get TLD directly from voice configuration
+            if voice_config.get('tld'):
+                tld = voice_config.get('tld')
+            
             # Create TTS object
             tts = gTTS(text=text, lang=lang, tld=tld, slow=False)
             
@@ -67,6 +75,8 @@ class GoogleTTSProvider(TTSProvider):
         except Exception as e:
             print(f"Error generating speech with Google TTS for '{text}': {e}")
             return None
+    
+
     
     def get_audio_duration(self, audio_path: str) -> float:
         """Get duration using pydub (handled by DialogueTTS class)."""

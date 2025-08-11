@@ -26,25 +26,44 @@ from utils.file_utils import (
     format_output_data,
     ensure_output_directory
 )
+from utils.voice_manager import (
+    create_voice_manager,
+    get_voice_config_for_conversation,
+    VoiceSelectionMode
+)
 
 
 class DialogueTTS:
-    def __init__(self, output_dir: str = "output", tts_provider: str = "google", **tts_kwargs):
+    def __init__(self, output_dir: str = "output", tts_provider: str = "google", 
+                 voice_mode: str = "gender_based", custom_voices: dict = None, **tts_kwargs):
         self.output_dir = output_dir
         ensure_output_directory(output_dir)
+        
+        # Store provider name
+        self.provider_name = tts_provider
         
         # Initialize TTS provider
         self.tts_provider = TTSProviderFactory.create_provider(
             tts_provider, output_dir, **tts_kwargs
         )
+        
+        # Initialize voice manager
+        self.voice_manager = create_voice_manager(voice_mode, tts_provider, custom_voices)
+        self.voice_mode = voice_mode
     
     def parse_conversation(self, content: str) -> List[Dict]:
         """Parse conversation content into individual dialogue lines."""
         return parse_conversation_content(content)
     
     def generate_speech(self, text: str, speaker_name: str, gender: str) -> str:
-        """Generate speech from text using the configured TTS provider."""
-        return self.tts_provider.generate_speech(text, speaker_name, gender)
+        """Generate speech from text using the configured TTS provider with voice management."""
+        # Get voice configuration for this speaker
+        voice_config = self.voice_manager.get_voice_for_speaker(speaker_name, gender, self.provider_name)
+        
+        # Generate speech with voice configuration
+        return self.tts_provider.generate_speech(
+            text, speaker_name, gender, voice_config=voice_config
+        )
     
     def get_audio_duration(self, audio_path: str) -> float:
         """Get duration of audio file in seconds using pydub."""
@@ -133,11 +152,13 @@ class DialogueTTS:
         return output_path if success else None
     
     def get_tts_provider_info(self) -> Dict:
-        """Get information about the current TTS provider."""
+        """Get information about the current TTS provider and voice configuration."""
         return {
             "provider_name": self.tts_provider.__class__.__name__,
             "supported_languages": self.tts_provider.get_supported_languages(),
-            "supported_voices": self.tts_provider.get_supported_voices()
+            "supported_voices": self.tts_provider.get_supported_voices(),
+            "voice_mode": self.voice_mode,
+            "voice_manager": self.voice_manager.mode.value
         }
     
     def change_tts_provider(self, provider_name: str, **kwargs):
@@ -149,6 +170,30 @@ class DialogueTTS:
     
 
     
+    def get_voice_info_for_speaker(self, speaker_name: str, gender: str) -> Dict:
+        """Get detailed voice information for a specific speaker."""
+        return self.voice_manager.get_voice_info(speaker_name, gender, "google")
+    
+    def set_voice_mode(self, mode: str):
+        """Change the voice selection mode."""
+        try:
+            voice_mode = VoiceSelectionMode(mode.lower())
+            self.voice_manager = create_voice_manager(mode, None)
+            self.voice_mode = mode
+            print(f"Voice mode changed to: {mode}")
+        except ValueError:
+            print(f"Invalid voice mode: {mode}. Available modes: fixed, random, gender_based")
+    
+    def add_custom_voice(self, gender: str, voice_name: str):
+        """Add a custom voice to the voice pool."""
+        self.voice_manager.add_voice_to_pool(gender, voice_name)
+        print(f"Added voice '{voice_name}' to {gender} voice pool")
+    
+    def clear_voice_cache(self):
+        """Clear the voice assignment cache."""
+        self.voice_manager.clear_voice_cache()
+        print("Voice cache cleared")
+    
     @staticmethod
     def get_available_providers() -> list:
         """Get list of available TTS providers."""
@@ -159,6 +204,7 @@ def main():
     """Main function to demonstrate usage."""
     # Example conversation data
     conversation = {
+        "dialog_id": "demo_conversation",
         "speakers": [
             {
                 "name": "Jane",
@@ -172,26 +218,43 @@ def main():
         "content": "Jane: Hi, David: Hello"
     }
     
-    # Initialize TTS tool with default Google TTS provider
+    # Initialize TTS tool with voice management
     print("Available TTS providers:", DialogueTTS.get_available_providers())
-    tts_tool = DialogueTTS()
     
-    # Show provider information
-    provider_info = tts_tool.get_tts_provider_info()
-    print(f"Using TTS provider: {provider_info['provider_name']}")
-    print(f"Supported languages: {provider_info['supported_languages']}")
+    # Example 1: Gender-based voice selection (default)
+    print("\n=== Example 1: Gender-based voices ===")
+    tts_tool = DialogueTTS(voice_mode="gender_based")
+    
+    # Show voice information for speakers
+    for speaker in conversation["speakers"]:
+        voice_info = tts_tool.get_voice_info_for_speaker(speaker["name"], speaker["gender"])
+        print(f"Speaker {speaker['name']} ({speaker['gender']}): {voice_info['voice_name']}")
     
     # Process conversation
-    print("\nProcessing conversation...")
     output = tts_tool.process_conversation(conversation)
-    
-    # Save output
     tts_tool.save_output(output)
     
-    print(f"Generated {len(output['lines'])} audio files")
+    # Example 2: Fixed voices (same speaker always gets same voice)
+    print("\n=== Example 2: Fixed voices ===")
+    tts_tool_fixed = DialogueTTS(voice_mode="fixed")
+    
+    # Show voice assignments
+    for speaker in conversation["speakers"]:
+        voice_info = tts_tool_fixed.get_voice_info_for_speaker(speaker["name"], speaker["gender"])
+        print(f"Speaker {speaker['name']} ({speaker['gender']}): {voice_info['voice_name']} (fixed)")
+    
+    # Example 3: Random voices
+    print("\n=== Example 3: Random voices ===")
+    tts_tool_random = DialogueTTS(voice_mode="random")
+    
+    # Show random voice assignments
+    for speaker in conversation["speakers"]:
+        voice_info = tts_tool_random.get_voice_info_for_speaker(speaker["name"], speaker["gender"])
+        print(f"Speaker {speaker['name']} ({speaker['gender']}): {voice_info['voice_name']} (random)")
+    
+    print(f"\nGenerated {len(output['lines'])} audio files")
     print(f"Total duration: {output['total_duration']:.2f} seconds")
     print(f"Output directory: {output['output_directory']}")
-    print(f"Audio files location: {os.path.join(output['output_directory'], 'audio')}")
     if "merged_audio_file" in output:
         print(f"Merged audio: {os.path.join(output['output_directory'], output['merged_audio_file'])}")
 
