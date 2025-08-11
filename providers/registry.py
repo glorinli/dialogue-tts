@@ -4,6 +4,7 @@ Provider Registry
 Automatically imports and registers all available TTS providers.
 """
 
+from .base import TTSProvider
 from .factory import TTSProviderFactory
 from .google import GoogleTTSProvider
 from .elevenlabs import ElevenLabsTTSProvider

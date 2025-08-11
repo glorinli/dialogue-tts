@@ -8,8 +8,7 @@ import os
 import uuid
 from datetime import datetime
 from typing import Dict, Optional
-from elevenlabs import generate, save, set_api_key
-from elevenlabs import voices, Voice, VoiceSettings
+from elevenlabs import client
 from .base import TTSProvider
 
 
@@ -26,18 +25,19 @@ class ElevenLabsTTSProvider(TTSProvider):
         """
         self.output_dir = output_dir
         
-        # Set API key from parameter or environment variable
+        # Get API key from parameter or environment variable
         if api_key:
-            set_api_key(api_key)
+            self.api_key = api_key
         else:
             # Try to load from environment
             from dotenv import load_dotenv
             load_dotenv()
-            env_api_key = os.getenv('ELEVENLABS_API_KEY')
-            if env_api_key:
-                set_api_key(env_api_key)
-            else:
+            self.api_key = os.getenv('ELEVENLABS_API_KEY')
+            if not self.api_key:
                 raise ValueError("ElevenLabs API key not provided. Set ELEVENLABS_API_KEY in .env file or pass api_key parameter.")
+        
+        # Initialize ElevenLabs client
+        self.client = client.ElevenLabs(api_key=self.api_key)
         
         # Cache available voices
         self._available_voices = None
@@ -47,7 +47,8 @@ class ElevenLabsTTSProvider(TTSProvider):
         """Get and cache available voices from ElevenLabs."""
         if self._available_voices is None:
             try:
-                self._available_voices = voices()
+                voices_response = self.client.voices.get_all()
+                self._available_voices = voices_response.voices
             except Exception as e:
                 print(f"Warning: Could not fetch ElevenLabs voices: {e}")
                 self._available_voices = []
