@@ -11,6 +11,7 @@ import argparse
 from pathlib import Path
 from typing import List, Dict, Union
 from dialogue_tts import DialogueTTS
+from providers.registry import AVAILABLE_PROVIDERS
 from utils.conversation_parser import validate_conversation_data
 
 
@@ -184,7 +185,7 @@ Examples:
     parser.add_argument(
         '--provider', '-p',
         default='google',
-        choices=['google'],  # Add more providers as they become available
+        choices=AVAILABLE_PROVIDERS,  # Dynamically loaded from providers package
         help='TTS provider to use (default: google)'
     )
     

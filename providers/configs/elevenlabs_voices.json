@@ -1,0 +1,38 @@
+{
+    "voices": {
+        "male": [
+            {
+                "name": "en-US-male-Adam",
+                "voice_id": "pNInz6obpgDQGcFmaJgB",
+                "description": "Deep, confident male voice"
+            },
+            {
+                "name": "en-US-male-Antoni",
+                "voice_id": "VR6AewLTigWG4xSOukaG",
+                "description": "Warm, friendly male voice"
+            },
+            {
+                "name": "en-US-male-Arnold",
+                "voice_id": "VR6AewLTigWG4xSOukaG",
+                "description": "Strong, authoritative male voice"
+            }
+        ],
+        "female": [
+            {
+                "name": "en-US-female-Rachel",
+                "voice_id": "21m00Tcm4TlvDq8ikWAM",
+                "description": "Clear, professional female voice"
+            },
+            {
+                "name": "en-US-female-Domi",
+                "voice_id": "AZnzlk1XvdvUeBnXmlld",
+                "description": "Warm, engaging female voice"
+            },
+            {
+                "name": "en-US-female-Bella",
+                "voice_id": "EXAVITQu4vr4xnSDxMaL",
+                "description": "Soft, gentle female voice"
+            }
+        ]
+    }
+}

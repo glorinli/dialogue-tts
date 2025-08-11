@@ -30,34 +30,29 @@ class VoiceManager:
     def _initialize_voice_pool(self, provider: str = "google") -> Dict[str, List[Dict]]:
         """Initialize the pool of available voices by gender for a specific provider."""
         # Load main config to get provider mapping
-        main_config_path = os.path.join(os.path.dirname(__file__), 'voice_config.json')
+        main_config_path = os.path.join(os.path.dirname(__file__), '..', 'providers', 'configs', 'voice_config.json')
         
         try:
             with open(main_config_path, 'r') as f:
                 main_config = json.load(f)
-                provider_file = main_config.get('voice_mapping', {}).get(provider, 'google_voices.json')
-        except (FileNotFoundError, json.JSONDecodeError):
-            provider_file = 'google_voices.json'
+                provider_file = main_config.get('voice_mapping', {}).get(provider)
+                if not provider_file:
+                    raise ValueError(f"No voice configuration found for provider '{provider}' in voice_config.json")
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            raise ValueError(f"Failed to load voice_config.json: {e}")
         
         # Load provider-specific voice file
-        provider_config_path = os.path.join(os.path.dirname(__file__), provider_file)
+        provider_config_path = os.path.join(os.path.dirname(__file__), '..', 'providers', 'configs', provider_file)
         
         try:
             with open(provider_config_path, 'r') as f:
                 provider_config = json.load(f)
-                return provider_config.get('voices', {})
-        except (FileNotFoundError, json.JSONDecodeError):
-            # Fallback to default voices if config file is not found or invalid
-            return {
-                "male": [
-                    {"name": "en-US-male-David", "tld": "ca", "description": "Canadian male voice"},
-                    {"name": "en-US-male-Michael", "tld": "ie", "description": "Irish male voice"}
-                ],
-                "female": [
-                    {"name": "en-US-female-Sarah", "tld": "com", "description": "US female voice"},
-                    {"name": "en-US-female-Emma", "tld": "ca", "description": "Canadian female voice"}
-                ]
-            }
+                voices = provider_config.get('voices', {})
+                if not voices:
+                    raise ValueError(f"No voices found in {provider_file}")
+                return voices
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            raise ValueError(f"Failed to load voice configuration from {provider_file}: {e}")
     
     def get_voice_for_speaker(self, speaker_name: str, gender: str, 
                             provider: str = "google") -> Dict[str, Any]:
@@ -91,16 +86,25 @@ class VoiceManager:
                 selected_voice = random.choice(available_voices)
                 self.voice_cache[cache_key] = selected_voice
             else:
-                # Fallback to default voice
-                self.voice_cache[cache_key] = self._get_default_voice(gender, provider)
+                # No voices available - this should not happen if configuration is correct
+                raise ValueError(f"No voices available for gender '{gender}' and provider '{provider}'. "
+                               f"Please check the voice configuration file.")
         
-        return {
-            "voice_name": self.voice_cache[cache_key]["name"],
-            "tld": self.voice_cache[cache_key].get("tld"),
+        cached_voice = self.voice_cache[cache_key]
+        voice_config = {
+            "voice_name": cached_voice["name"],
             "gender": gender,
             "provider": provider,
             "mode": "fixed"
         }
+        
+        # Add provider-specific fields if they exist
+        if "voice_id" in cached_voice:
+            voice_config["voice_id"] = cached_voice["voice_id"]
+        if "tld" in cached_voice:
+            voice_config["tld"] = cached_voice["tld"]
+        
+        return voice_config
     
     def _get_random_voice(self, gender: str, provider: str) -> Dict[str, Any]:
         """Get a random voice for the gender."""
@@ -108,15 +112,24 @@ class VoiceManager:
         if available_voices:
             selected_voice = random.choice(available_voices)
         else:
-            selected_voice = self._get_default_voice(gender, provider)
+            # No voices available - this should not happen if configuration is correct
+            raise ValueError(f"No voices available for gender '{gender}' and provider '{provider}'. "
+                           f"Please check the voice configuration file.")
         
-        return {
+        voice_config = {
             "voice_name": selected_voice["name"],
-            "tld": selected_voice.get("tld"),
             "gender": gender,
             "provider": provider,
             "mode": "random"
         }
+        
+        # Add provider-specific fields if they exist
+        if "voice_id" in selected_voice:
+            voice_config["voice_id"] = selected_voice["voice_id"]
+        if "tld" in selected_voice:
+            voice_config["tld"] = selected_voice["tld"]
+        
+        return voice_config
     
     def _get_gender_based_voice(self, gender: str, provider: str) -> Dict[str, Any]:
         """Get a gender-appropriate voice."""
@@ -126,41 +139,32 @@ class VoiceManager:
         if available_voices:
             # Use the first available voice for consistency
             selected_voice = available_voices[0]
-            return {
+            # Return voice config with all available fields
+            voice_config = {
                 "voice_name": selected_voice["name"],
-                "tld": selected_voice.get("tld"),
                 "gender": gender,
                 "provider": provider,
                 "mode": "gender_based"
             }
+            
+            # Add provider-specific fields if they exist
+            if "voice_id" in selected_voice:
+                voice_config["voice_id"] = selected_voice["voice_id"]
+            if "tld" in selected_voice:
+                voice_config["tld"] = selected_voice["tld"]
+            
+            return voice_config
         else:
-            # Fallback to default voice
-            default_voice = self._get_default_voice(gender, provider)
-            return {
-                "voice_name": default_voice["name"],
-                "tld": default_voice.get("tld"),
-                "gender": gender,
-                "provider": provider,
-                "mode": "gender_based"
-            }
+            # No voices available - this should not happen if configuration is correct
+            raise ValueError(f"No voices available for gender '{gender}' and provider '{provider}'. "
+                           f"Please check the voice configuration file.")
     
     def _get_default_voice(self, gender: str, provider: str) -> Dict[str, str]:
         """Get default voice for gender and provider."""
-        if provider == "google":
-            default_name = f"en-US-{gender}-Default"
-            default_tld = "com" if gender == "female" else "ca"
-            return {
-                "name": default_name,
-                "tld": default_tld,
-                "description": f"Default {gender} voice"
-            }
-        else:
-            # Default fallback
-            return {
-                "name": f"en-US-{gender}-Default",
-                "tld": "com",
-                "description": f"Default {gender} voice"
-            }
+        # This method should not be called if voice configuration is properly set up
+        # If we reach here, it means the voice configuration is missing or invalid
+        raise ValueError(f"No voice configuration available for provider '{provider}' and gender '{gender}'. "
+                        f"Please ensure the voice configuration file exists and contains valid voices.")
     
     def set_voice_pool(self, gender: str, voices: List[str]):
         """Set custom voice pool for a gender."""

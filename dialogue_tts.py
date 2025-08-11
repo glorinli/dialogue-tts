@@ -6,7 +6,7 @@ Generates voice files for conversations with timing information.
 
 import os
 from typing import Dict, List
-from tts_providers import TTSProviderFactory, TTSProvider
+from providers.registry import TTSProviderFactory, TTSProvider
 from utils.conversation_parser import (
     parse_conversation_content, 
     validate_conversation_data, 

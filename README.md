@@ -5,7 +5,9 @@ A Python tool to generate voice files for conversations with timing information.
 ## Features
 
 - Generate voice files from conversation text using multiple TTS providers
-- Currently supports Google Text-to-Speech (gTTS) with extensible architecture
+- **Currently supports:**
+  - **Google Text-to-Speech (gTTS)**: Free, multiple accents via TLDs
+  - **ElevenLabs**: High-quality AI voices with 10,000 free characters/month
 - **Advanced voice management** with three selection modes:
   - **Fixed**: Each speaker gets a consistent voice across conversations
   - **Random**: Random voice selection for each speaker
@@ -23,7 +25,15 @@ A Python tool to generate voice files for conversations with timing information.
 pip install -r requirements.txt
 ```
 
-2. No additional audio processing tools required - MP3 files are generated directly
+2. **ElevenLabs Setup** (Optional, for high-quality voices):
+   - Get a free API key from [ElevenLabs](https://elevenlabs.io/)
+   - Create a `.env` file in the project root:
+   ```bash
+   ELEVENLABS_API_KEY=your_api_key_here
+   ```
+   - The `.env` file is automatically ignored by git for security
+
+3. No additional audio processing tools required - MP3 files are generated directly
 
 ## Usage
 
@@ -40,6 +50,9 @@ python main.py conversations/
 
 # Specify output directory and TTS settings
 python main.py conversation.json --output my_output --provider google --lang en
+
+# Use ElevenLabs for high-quality voices
+python main.py conversation.json --provider elevenlabs
 
 # Use different voice selection modes
 python main.py conversation.json --voice-mode fixed    # Consistent voices per speaker

@@ -11,3 +11,4 @@ __pycache__/
 *.pyzwz
 
 test_output/
+.env
