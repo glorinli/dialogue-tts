@@ -35,7 +35,7 @@ from utils.multi_provider_tts import create_multi_provider_tts_manager
 
 class DialogueTTS:
     def __init__(self, output_dir: str = "output", tts_provider: str = "google", 
-                 voice_mode: str = "gender_based", custom_voices: dict = None, **tts_kwargs):
+                 custom_voices: dict = None, **tts_kwargs):
         self.output_dir = output_dir
         ensure_output_directory(output_dir)
         
@@ -45,10 +45,10 @@ class DialogueTTS:
         # Initialize multi-provider TTS manager first
         self.tts_manager = create_multi_provider_tts_manager(output_dir)
         
-        # Initialize unified voice manager with available providers
+        # Initialize unified voice manager with available providers, always use gender_based mode
         available_providers = self.tts_manager.get_available_providers()
-        self.voice_manager = create_unified_voice_manager(voice_mode, available_providers)
-        self.voice_mode = voice_mode
+        self.voice_manager = create_unified_voice_manager("gender_based", available_providers)
+        self.voice_mode = "gender_based"
     
     def parse_conversation(self, content: str) -> List[Dict]:
         """Parse conversation content into individual dialogue lines."""
@@ -166,14 +166,7 @@ class DialogueTTS:
         """Get detailed voice information for a specific speaker."""
         return self.voice_manager.get_voice_for_speaker(speaker_name, gender)
     
-    def set_voice_mode(self, mode: str):
-        """Change the voice selection mode."""
-        try:
-            self.voice_manager = create_unified_voice_manager(mode)
-            self.voice_mode = mode
-            print(f"Voice mode changed to: {mode}")
-        except ValueError:
-            print(f"Invalid voice mode: {mode}. Available modes: fixed, random, gender_based")
+
     
 
     
@@ -204,9 +197,9 @@ def main():
     # Initialize TTS tool with voice management
     print("Available TTS providers:", DialogueTTS.get_available_providers())
     
-    # Example 1: Gender-based voice selection (default)
-    print("\n=== Example 1: Gender-based voices ===")
-    tts_tool = DialogueTTS(voice_mode="gender_based")
+    # Example: Gender-based voice selection (default)
+    print("\n=== Example: Gender-based voices ===")
+    tts_tool = DialogueTTS()
     
     # Show voice information for speakers
     for speaker in conversation["speakers"]:
@@ -216,24 +209,6 @@ def main():
     # Process conversation
     output = tts_tool.process_conversation(conversation)
     tts_tool.save_output(output)
-    
-    # Example 2: Fixed voices (same speaker always gets same voice)
-    print("\n=== Example 2: Fixed voices ===")
-    tts_tool_fixed = DialogueTTS(voice_mode="fixed")
-    
-    # Show voice assignments
-    for speaker in conversation["speakers"]:
-        voice_info = tts_tool_fixed.get_voice_info_for_speaker(speaker["name"], speaker["gender"])
-        print(f"Speaker {speaker['name']} ({speaker['gender']}): {voice_info['voice_name']} (fixed)")
-    
-    # Example 3: Random voices
-    print("\n=== Example 3: Random voices ===")
-    tts_tool_random = DialogueTTS(voice_mode="random")
-    
-    # Show random voice assignments
-    for speaker in conversation["speakers"]:
-        voice_info = tts_tool_random.get_voice_info_for_speaker(speaker["name"], speaker["gender"])
-        print(f"Speaker {speaker['name']} ({speaker['gender']}): {voice_info['voice_name']} (random)")
     
     print(f"\nGenerated {len(output['lines'])} audio files")
     print(f"Total duration: {output['total_duration']:.2f} seconds")

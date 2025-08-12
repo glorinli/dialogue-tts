@@ -6,9 +6,6 @@ This package contains all test files for the Dialogue TTS system.
 
 ### Core Tests
 - **`test_providers_package.py`** - Tests the providers package structure and functionality
-- **`test_unified_voices.py`** - Tests the unified voice management system
-- **`test_elevenlabs.py`** - Tests ElevenLabs TTS integration
-- **`test_gtts_tlds.py`** - Tests Google TTS TLD functionality
 
 ### Demos
 - **`demo_unified_voices.py`** - Demonstrates the unified voice management system
@@ -28,15 +25,6 @@ python3 tests/run_all_tests.py
 # Test providers package
 python3 tests/test_providers_package.py
 
-# Test unified voice system
-python3 tests/test_unified_voices.py
-
-# Test ElevenLabs integration
-python3 tests/test_elevenlabs.py
-
-# Test Google TTS TLDs
-python3 tests/test_gtts_tlds.py
-
 # Run demo
 python3 tests/demo_unified_voices.py
 ```
@@ -45,9 +33,6 @@ python3 tests/demo_unified_voices.py
 ```bash
 # From the project root directory
 python3 -m tests.test_providers_package
-python3 -m tests.test_unified_voices
-python3 -m tests.test_elevenlabs
-python3 -m tests.test_gtts_tlds
 python3 -m tests.demo_unified_voices
 ```
 

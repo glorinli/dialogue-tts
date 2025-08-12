@@ -25,6 +25,15 @@ A Python tool to generate voice files for conversations with timing information.
 pip install -r requirements.txt
 ```
 
+2. **Run Tests** (Optional):
+```bash
+# Run all tests
+python3 tests/run_all_tests.py
+
+# Run demo
+python3 tests/demo_unified_voices.py
+```
+
 2. **ElevenLabs Setup** (Optional, for high-quality voices):
    - Get a free API key from [ElevenLabs](https://elevenlabs.io/)
    - Create a `.env` file in the project root:

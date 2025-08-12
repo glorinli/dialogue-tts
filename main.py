@@ -11,7 +11,7 @@ import argparse
 from pathlib import Path
 from typing import List, Dict, Union
 from dialogue_tts import DialogueTTS
-from providers.registry import AVAILABLE_PROVIDERS
+
 from utils.conversation_parser import validate_conversation_data
 
 
@@ -91,8 +91,7 @@ def process_single_conversation(tts_tool: DialogueTTS, conversation_data: Dict,
         return None
 
 
-def process_files(input_path: str, output_dir: str = "output", 
-                 tts_provider: str = "google", **kwargs) -> List[Dict]:
+def process_files(input_path: str, output_dir: str = "output", **kwargs) -> List[Dict]:
     """Process all JSON files in the input path."""
     
     # Find all JSON files
@@ -104,7 +103,7 @@ def process_files(input_path: str, output_dir: str = "output",
         return []
     
     # Initialize TTS tool
-    tts_tool = DialogueTTS(output_dir=output_dir, tts_provider=tts_provider, **kwargs)
+    tts_tool = DialogueTTS(output_dir=output_dir, **kwargs)
     
     # Show provider information
     provider_info = tts_tool.get_tts_provider_info()
@@ -163,11 +162,8 @@ Examples:
   # Process all JSON files in a directory
   python main.py conversations/
   
-  # Specify output directory and TTS provider
-  python main.py conversation.json --output my_output --provider google --lang en
-  
-  # Process with custom TTS settings
-  python main.py conversations/ --provider google --lang es --tld com
+  # Specify output directory
+  python main.py conversation.json --output my_output
         """
     )
     
@@ -182,31 +178,9 @@ Examples:
         help='Output directory (default: output)'
     )
     
-    parser.add_argument(
-        '--provider', '-p',
-        default='elevenlabs',
-        choices=AVAILABLE_PROVIDERS,  # Dynamically loaded from providers package
-        help='TTS provider to use (default: elevenlabs)'
-    )
+
     
-    parser.add_argument(
-        '--lang',
-        default='en',
-        help='Language for TTS (default: en)'
-    )
-    
-    parser.add_argument(
-        '--tld',
-        default='com',
-        help='Top-level domain for Google TTS (default: com)'
-    )
-    
-    parser.add_argument(
-        '--voice-mode',
-        default='gender_based',
-        choices=['fixed', 'random', 'gender_based'],
-        help='Voice selection mode (default: gender_based)'
-    )
+
     
     parser.add_argument(
         '--verbose', '-v',
@@ -221,25 +195,11 @@ Examples:
         print(f"Error: Input path '{args.input}' does not exist")
         sys.exit(1)
     
-    # Prepare TTS kwargs
-    tts_kwargs = {
-        'lang': args.lang,
-        'tld': args.tld
-    }
-    
-    # Prepare voice management kwargs
-    voice_kwargs = {
-        'voice_mode': args.voice_mode
-    }
-    
     # Process files
     try:
         results = process_files(
             input_path=args.input,
-            output_dir=args.output,
-            tts_provider=args.provider,
-            **tts_kwargs,
-            **voice_kwargs
+            output_dir=args.output
         )
         
         if not results:

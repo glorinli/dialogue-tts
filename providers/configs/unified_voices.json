@@ -2,18 +2,6 @@
     "voices": {
         "male": [
             {
-                "name": "en-US-male-David",
-                "provider": "google",
-                "tld": "com",
-                "description": "Canadian male voice"
-            },
-            {
-                "name": "en-US-male-Michael", 
-                "provider": "google",
-                "tld": "com",
-                "description": "Irish male voice"
-            },
-            {
                 "name": "en-US-male-Adam",
                 "provider": "elevenlabs",
                 "voice_id": "pNInz6obpgDQGcFmaJgB",
@@ -34,16 +22,10 @@
         ],
         "female": [
             {
-                "name": "en-US-female-Sarah", 
+                "name": "en-US-female-Google",
                 "provider": "google",
                 "tld": "com",
-                "description": "US female voice"
-            },
-            {
-                "name": "en-US-female-Emma",
-                "provider": "google",
-                "tld": "com",
-                "description": "Canadian female voice"
+                "description": "Google TTS female voice (US accent)"
             },
             {
                 "name": "en-US-female-Rachel",
@@ -67,7 +49,7 @@
     },
     "default_provider": "google",
     "provider_weights": {
-        "google": 0.5,
-        "elevenlabs": 0.5
+        "google": 0.3,
+        "elevenlabs": 0.7
     }
 }
