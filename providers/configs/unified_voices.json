@@ -2,37 +2,72 @@
     "voices": {
         "male": [
             {
+                "name": "en-US-male-David",
+                "provider": "google",
+                "tld": "com",
+                "description": "Canadian male voice"
+            },
+            {
+                "name": "en-US-male-Michael", 
+                "provider": "google",
+                "tld": "com",
+                "description": "Irish male voice"
+            },
+            {
                 "name": "en-US-male-Adam",
+                "provider": "elevenlabs",
                 "voice_id": "pNInz6obpgDQGcFmaJgB",
                 "description": "Deep, confident male voice"
             },
             {
                 "name": "en-US-male-Antoni",
+                "provider": "elevenlabs",
                 "voice_id": "VR6AewLTigWG4xSOukaG",
                 "description": "Warm, friendly male voice"
             },
             {
                 "name": "en-US-male-Arnold",
+                "provider": "elevenlabs",
                 "voice_id": "VR6AewLTigWG4xSOukaG",
                 "description": "Strong, authoritative male voice"
             }
         ],
         "female": [
             {
+                "name": "en-US-female-Sarah", 
+                "provider": "google",
+                "tld": "com",
+                "description": "US female voice"
+            },
+            {
+                "name": "en-US-female-Emma",
+                "provider": "google",
+                "tld": "com",
+                "description": "Canadian female voice"
+            },
+            {
                 "name": "en-US-female-Rachel",
+                "provider": "elevenlabs",
                 "voice_id": "21m00Tcm4TlvDq8ikWAM",
                 "description": "Clear, professional female voice"
             },
             {
                 "name": "en-US-female-Domi",
+                "provider": "elevenlabs",
                 "voice_id": "AZnzlk1XvdvUeBnXmlld",
                 "description": "Warm, engaging female voice"
             },
             {
                 "name": "en-US-female-Bella",
+                "provider": "elevenlabs",
                 "voice_id": "EXAVITQu4vr4xnSDxMaL",
                 "description": "Soft, gentle female voice"
             }
         ]
+    },
+    "default_provider": "google",
+    "provider_weights": {
+        "google": 0.5,
+        "elevenlabs": 0.5
     }
 }

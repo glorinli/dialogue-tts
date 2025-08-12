@@ -89,17 +89,17 @@ def test_voice_configuration():
     print("\n📁 Testing voice configuration...")
     
     try:
-        from utils.voice_manager import create_voice_manager
+        from utils.unified_voice_manager import create_unified_voice_manager
         
         # Test creating voice manager for ElevenLabs
-        voice_manager = create_voice_manager("gender_based", "elevenlabs")
+        voice_manager = create_unified_voice_manager("gender_based")
         
         # Test getting voice for male speaker
-        male_voice = voice_manager.get_voice_for_speaker("Bob", "male", "elevenlabs")
+        male_voice = voice_manager.get_voice_for_speaker("Bob", "male")
         print(f"✅ Male voice config: {male_voice}")
         
         # Test getting voice for female speaker
-        female_voice = voice_manager.get_voice_for_speaker("Alice", "female", "elevenlabs")
+        female_voice = voice_manager.get_voice_for_speaker("Alice", "female")
         print(f"✅ Female voice config: {female_voice}")
         
         return True

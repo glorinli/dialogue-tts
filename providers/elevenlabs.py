@@ -15,13 +15,14 @@ from .base import TTSProvider
 class ElevenLabsTTSProvider(TTSProvider):
     """ElevenLabs Text-to-Speech provider."""
     
-    def __init__(self, output_dir: str, api_key: str = None):
+    def __init__(self, output_dir: str, api_key: str = None, **kwargs):
         """
         Initialize ElevenLabs TTS provider.
         
         Args:
             output_dir: Directory to save generated audio files
             api_key: ElevenLabs API key (optional, will try to load from .env)
+            **kwargs: Additional arguments (ignored for ElevenLabs)
         """
         self.output_dir = output_dir
         

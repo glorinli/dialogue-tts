@@ -18,6 +18,9 @@ def test_providers_package():
     
     try:
         # Test importing the package
+        import sys
+        import os
+        sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
         from providers.registry import TTSProviderFactory, AVAILABLE_PROVIDERS
         print("✅ Successfully imported providers package")
         
@@ -62,18 +65,21 @@ def test_voice_configuration():
     print("\n📁 Testing voice configuration...")
     
     try:
-        from utils.voice_manager import create_voice_manager
+        import sys
+        import os
+        sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+        from utils.unified_voice_manager import create_unified_voice_manager
         
-        # Test creating voice manager for Google
-        voice_manager = create_voice_manager("gender_based", "google")
-        print("✅ Google voice manager created successfully")
+        # Test creating unified voice manager
+        voice_manager = create_unified_voice_manager("gender_based")
+        print("✅ Unified voice manager created successfully")
         
         # Test getting voice for male speaker
-        male_voice = voice_manager.get_voice_for_speaker("Bob", "male", "google")
+        male_voice = voice_manager.get_voice_for_speaker("Bob", "male")
         print(f"✅ Male voice config: {male_voice}")
         
         # Test getting voice for female speaker
-        female_voice = voice_manager.get_voice_for_speaker("Alice", "female", "google")
+        female_voice = voice_manager.get_voice_for_speaker("Alice", "female")
         print(f"✅ Female voice config: {female_voice}")
         
         return True
@@ -108,8 +114,6 @@ if __name__ == "__main__":
         print("    ├── elevenlabs.py")
         print("    ├── registry.py")
         print("    └── configs/")
-        print("        ├── voice_config.json")
-        print("        ├── google_voices.json")
-        print("        └── elevenlabs_voices.json")
+        print("        └── unified_voices.json")
     else:
         print("❌ Some tests failed. Please check the error messages above.")

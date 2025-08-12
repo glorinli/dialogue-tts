@@ -1,7 +1,0 @@
-{
-    "voice_mapping": {
-        "google": "google_voices.json",
-        "elevenlabs": "elevenlabs_voices.json"
-    },
-    "default_provider": "elevenlabs"
-}

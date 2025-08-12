@@ -184,9 +184,9 @@ Examples:
     
     parser.add_argument(
         '--provider', '-p',
-        default='google',
+        default='elevenlabs',
         choices=AVAILABLE_PROVIDERS,  # Dynamically loaded from providers package
-        help='TTS provider to use (default: google)'
+        help='TTS provider to use (default: elevenlabs)'
     )
     
     parser.add_argument(

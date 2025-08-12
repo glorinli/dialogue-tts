@@ -6,7 +6,7 @@ Generates voice files for conversations with timing information.
 
 import os
 from typing import Dict, List
-from providers.registry import TTSProviderFactory, TTSProvider
+from providers.registry import TTSProviderFactory
 from utils.conversation_parser import (
     parse_conversation_content, 
     validate_conversation_data, 
@@ -26,11 +26,11 @@ from utils.file_utils import (
     format_output_data,
     ensure_output_directory
 )
-from utils.voice_manager import (
-    create_voice_manager,
-    get_voice_config_for_conversation,
-    VoiceSelectionMode
+from utils.unified_voice_manager import (
+    create_unified_voice_manager,
+    get_voice_config_for_conversation
 )
+from utils.multi_provider_tts import create_multi_provider_tts_manager
 
 
 class DialogueTTS:
@@ -39,16 +39,15 @@ class DialogueTTS:
         self.output_dir = output_dir
         ensure_output_directory(output_dir)
         
-        # Store provider name
+        # Store provider name (legacy support)
         self.provider_name = tts_provider
         
-        # Initialize TTS provider
-        self.tts_provider = TTSProviderFactory.create_provider(
-            tts_provider, output_dir, **tts_kwargs
-        )
+        # Initialize multi-provider TTS manager first
+        self.tts_manager = create_multi_provider_tts_manager(output_dir)
         
-        # Initialize voice manager
-        self.voice_manager = create_voice_manager(voice_mode, tts_provider, custom_voices)
+        # Initialize unified voice manager with available providers
+        available_providers = self.tts_manager.get_available_providers()
+        self.voice_manager = create_unified_voice_manager(voice_mode, available_providers)
         self.voice_mode = voice_mode
     
     def parse_conversation(self, content: str) -> List[Dict]:
@@ -56,14 +55,12 @@ class DialogueTTS:
         return parse_conversation_content(content)
     
     def generate_speech(self, text: str, speaker_name: str, gender: str) -> str:
-        """Generate speech from text using the configured TTS provider with voice management."""
-        # Get voice configuration for this speaker
-        voice_config = self.voice_manager.get_voice_for_speaker(speaker_name, gender, self.provider_name)
+        """Generate speech from text using the appropriate TTS provider based on voice selection."""
+        # Get voice configuration for this speaker (includes provider info)
+        voice_config = self.voice_manager.get_voice_for_speaker(speaker_name, gender)
         
-        # Generate speech with voice configuration
-        return self.tts_provider.generate_speech(
-            text, speaker_name, gender, voice_config=voice_config
-        )
+        # Generate speech using the multi-provider TTS manager
+        return self.tts_manager.generate_speech(text, voice_config)
     
     def get_audio_duration(self, audio_path: str) -> float:
         """Get duration of audio file in seconds using pydub."""
@@ -152,47 +149,33 @@ class DialogueTTS:
         return output_path if success else None
     
     def get_tts_provider_info(self) -> Dict:
-        """Get information about the current TTS provider and voice configuration."""
+        """Get information about the TTS providers and voice configuration."""
         return {
-            "provider_name": self.tts_provider.__class__.__name__,
-            "supported_languages": self.tts_provider.get_supported_languages(),
-            "supported_voices": self.tts_provider.get_supported_voices(),
+            "provider_name": "Multi-Provider",  # Now supports multiple providers
+            "available_providers": self.tts_manager.get_available_providers(),
             "voice_mode": self.voice_mode,
-            "voice_manager": self.voice_manager.mode.value
+            "voice_manager": self.voice_manager.mode.value,
+            "voice_summary": self.voice_manager.get_available_voices_summary()
         }
     
-    def change_tts_provider(self, provider_name: str, **kwargs):
-        """Change the TTS provider."""
-        self.tts_provider = TTSProviderFactory.create_provider(
-            provider_name, self.audio_dir, **kwargs
-        )
-        print(f"Changed TTS provider to: {provider_name}")
+
     
 
     
     def get_voice_info_for_speaker(self, speaker_name: str, gender: str) -> Dict:
         """Get detailed voice information for a specific speaker."""
-        return self.voice_manager.get_voice_info(speaker_name, gender, "google")
+        return self.voice_manager.get_voice_for_speaker(speaker_name, gender)
     
     def set_voice_mode(self, mode: str):
         """Change the voice selection mode."""
         try:
-            voice_mode = VoiceSelectionMode(mode.lower())
-            self.voice_manager = create_voice_manager(mode, None)
+            self.voice_manager = create_unified_voice_manager(mode)
             self.voice_mode = mode
             print(f"Voice mode changed to: {mode}")
         except ValueError:
             print(f"Invalid voice mode: {mode}. Available modes: fixed, random, gender_based")
     
-    def add_custom_voice(self, gender: str, voice_name: str):
-        """Add a custom voice to the voice pool."""
-        self.voice_manager.add_voice_to_pool(gender, voice_name)
-        print(f"Added voice '{voice_name}' to {gender} voice pool")
-    
-    def clear_voice_cache(self):
-        """Clear the voice assignment cache."""
-        self.voice_manager.clear_voice_cache()
-        print("Voice cache cleared")
+
     
     @staticmethod
     def get_available_providers() -> list:

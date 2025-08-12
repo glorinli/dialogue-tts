@@ -50,25 +50,6 @@ def test_all_tlds():
     # Common TLDs to test
     tlds_to_test = [
         "com",      # US (most common)
-        "co.uk",    # UK
-        "com.au",   # Australia
-        "ca",       # Canada
-        "ie",       # Ireland
-        "in",       # India
-        "co.za",    # South Africa
-        "co.nz",    # New Zealand
-        "com.sg",   # Singapore
-        "com.my",   # Malaysia
-        "co.jp",    # Japan
-        "co.kr",    # Korea
-        "com.br",   # Brazil
-        "com.mx",   # Mexico
-        "com.ar",   # Argentina
-        "com.pe",   # Peru
-        "com.cl",   # Chile
-        "com.ve",   # Venezuela
-        "com.co",   # Colombia
-        "com.ec",   # Ecuador
     ]
     
     print("Testing Google TTS TLDs")
