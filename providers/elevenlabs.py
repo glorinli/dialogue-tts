@@ -39,75 +39,22 @@ class ElevenLabsTTSProvider(TTSProvider):
         
         # Initialize ElevenLabs client
         self.client = client.ElevenLabs(api_key=self.api_key)
-        
-        # Cache available voices
-        self._available_voices = None
-        self._voice_cache = {}
     
-    def _get_available_voices(self):
-        """Get and cache available voices from ElevenLabs."""
-        if self._available_voices is None:
-            try:
-                voices_response = self.client.voices.get_all()
-                self._available_voices = voices_response.voices
-            except Exception as e:
-                print(f"Warning: Could not fetch ElevenLabs voices: {e}")
-                self._available_voices = []
-        return self._available_voices
-    
-    def _get_voice_for_gender(self, gender: str, voice_config: Dict) -> str:
+    def _get_voice_id(self, voice_config: Dict) -> str:
         """
-        Get voice ID for a specific gender.
+        Get voice ID from voice configuration.
         
         Args:
-            gender: Gender of the speaker ('male' or 'female')
-            voice_config: Voice configuration dictionary
+            voice_config: Voice configuration dictionary from unified_voices.json
             
         Returns:
             Voice ID string
         """
-        # Check if voice_config specifies a voice name
-        voice_name = voice_config.get('voice_name', '')
-        
-        # If we have a specific voice name, try to find it
-        if voice_name and voice_name in self._voice_cache:
-            return self._voice_cache[voice_name]
-        
-        # Get available voices
-        available_voices = self._get_available_voices()
-        
-        # Filter by gender if specified
-        gender_voices = []
-        for voice in available_voices:
-            # ElevenLabs doesn't have explicit gender, but we can use labels or names
-            voice_labels = getattr(voice, 'labels', {}) or {}
-            voice_name_lower = getattr(voice, 'name', '').lower()
-            
-            # Check if voice has gender label or name suggests gender
-            if gender.lower() == 'male':
-                if 'male' in voice_labels.get('gender', '').lower() or 'male' in voice_name_lower:
-                    gender_voices.append(voice)
-            elif gender.lower() == 'female':
-                if 'female' in voice_labels.get('gender', '').lower() or 'female' in voice_name_lower:
-                    gender_voices.append(voice)
-        
-        # If no gender-specific voices found, use all voices
-        if not gender_voices:
-            gender_voices = available_voices
-        
-        # Select first available voice
-        if gender_voices:
-            selected_voice = gender_voices[0]
-            voice_id = getattr(selected_voice, 'voice_id', None)
-            
-            # Cache the voice name for future use
-            if voice_name:
-                self._voice_cache[voice_name] = voice_id
-            
-            return voice_id
-        
-        # Fallback to a default voice
-        return "pNInz6obpgDQGcFmaJgB"  # Adam (male) as fallback
+        # Get voice_id directly from the config
+        voice_id = voice_config.get('voice_id')
+        if not voice_id:
+            raise ValueError("voice_id not found in voice configuration")
+        return voice_id
     
     def generate_speech(self, text: str, speaker_name: str, gender: str, **kwargs) -> Optional[str]:
         """
@@ -126,14 +73,14 @@ class ElevenLabsTTSProvider(TTSProvider):
             # Get voice configuration
             voice_config = kwargs.get('voice_config', {})
             
-            # Get voice ID for this gender
-            voice_id = self._get_voice_for_gender(gender, voice_config)
+            # Get voice ID from config
+            voice_id = self._get_voice_id(voice_config)
             
-            # Generate speech
-            audio = generate(
+            # Generate speech using client
+            audio = self.client.text_to_speech.convert(
                 text=text,
-                voice=voice_id,
-                model="eleven_monolingual_v1"
+                voice_id=voice_id,
+                model_id="eleven_monolingual_v1"
             )
             
             # Generate unique filename
@@ -141,8 +88,10 @@ class ElevenLabsTTSProvider(TTSProvider):
             filename = f"temp_{timestamp}_{speaker_name}_{uuid.uuid4().hex[:8]}.mp3"
             temp_path = os.path.join(self.output_dir, filename)
             
-            # Save audio
-            save(audio, temp_path)
+            # Save audio by writing bytes to file
+            with open(temp_path, 'wb') as f:
+                for chunk in audio:
+                    f.write(chunk)
             
             return temp_path
             
@@ -180,20 +129,6 @@ class ElevenLabsTTSProvider(TTSProvider):
         Returns:
             Dictionary mapping voice names to voice information
         """
-        try:
-            available_voices = self._get_available_voices()
-            voice_info = {}
-            
-            for voice in available_voices:
-                voice_name = getattr(voice, 'name', 'Unknown')
-                voice_id = getattr(voice, 'voice_id', 'Unknown')
-                voice_info[voice_name] = {
-                    'id': voice_id,
-                    'name': voice_name,
-                    'labels': getattr(voice, 'labels', {})
-                }
-            
-            return voice_info
-        except Exception as e:
-            print(f"Warning: Could not get voice information: {e}")
-            return {}
+        # Return empty dict since we don't need to fetch voices from API
+        # Voice information is managed by the unified voice manager
+        return {}

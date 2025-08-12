@@ -7,6 +7,7 @@ Handles audio file operations, merging, and duration calculations.
 import os
 from typing import List, Tuple, Optional
 from pydub import AudioSegment
+from dotenv import load_dotenv
 
 
 def get_audio_duration(audio_path: str) -> float:
@@ -49,7 +50,7 @@ def save_audio_file(temp_mp3_path: str, output_filename: str, target_dir: str) -
         return None
 
 
-def merge_audio_files(audio_dir: str, dialog_id: str, output_dir: str) -> Optional[str]:
+def merge_audio_files(audio_dir: str, dialog_id: str, output_dir: str, gap_duration: float = 0.5) -> Optional[str]:
     """
     Merge all individual MP3 files into a single output.mp3 file.
     
@@ -86,9 +87,16 @@ def merge_audio_files(audio_dir: str, dialog_id: str, output_dir: str) -> Option
         print(f"Merging {len(mp3_files)} audio files...")
         combined = AudioSegment.empty()
         
-        for index, file_path in mp3_files:
+        for i, (index, file_path) in enumerate(mp3_files):
             try:
                 audio = AudioSegment.from_mp3(file_path)
+                
+                # Add gap before audio (except for the first file)
+                if i > 0 and gap_duration > 0:
+                    gap = AudioSegment.silent(duration=int(gap_duration * 1000))  # Convert to milliseconds
+                    combined += gap
+                    print(f"  Added {gap_duration}s gap")
+                
                 combined += audio
                 print(f"  Added file {index}: {os.path.basename(file_path)}")
             except Exception as e:
@@ -105,6 +113,22 @@ def merge_audio_files(audio_dir: str, dialog_id: str, output_dir: str) -> Option
     except Exception as e:
         print(f"Error merging audio files: {e}")
         return None
+
+
+def get_audio_gap_duration() -> float:
+    """
+    Get the gap duration between audio segments from environment variables.
+    
+    Returns:
+        Gap duration in seconds (default: 0.5)
+    """
+    load_dotenv()
+    gap_duration = os.getenv('AUDIO_GAP_DURATION', '0.5')
+    try:
+        return float(gap_duration)
+    except ValueError:
+        print(f"Warning: Invalid AUDIO_GAP_DURATION value '{gap_duration}', using default 0.5s")
+        return 0.5
 
 
 def ensure_directory_exists(directory_path: str) -> None:

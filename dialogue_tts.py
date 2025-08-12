@@ -17,7 +17,8 @@ from utils.audio_utils import (
     get_audio_duration, 
     save_audio_file, 
     merge_audio_files, 
-    ensure_directory_exists
+    ensure_directory_exists,
+    get_audio_gap_duration
 )
 from utils.file_utils import (
     save_json_output, 
@@ -91,8 +92,9 @@ class DialogueTTS:
         dialogue_dir, dialogue_audio_dir = create_dialogue_directory_structure(self.output_dir, dialog_id)
         
         current_time = 0.0
+        gap_duration = get_audio_gap_duration()
         
-        for line in dialogue_lines:
+        for i, line in enumerate(dialogue_lines):
             speaker_name = line["speaker"]
             text = line["text"]
             
@@ -115,6 +117,9 @@ class DialogueTTS:
                 final_audio_path = self.save_audio_file(temp_audio_path, line["audio_file"], dialogue_audio_dir)
                 if final_audio_path:
                     current_time += duration
+                    # Add gap after this line (except for the last line)
+                    if i < len(dialogue_lines) - 1:
+                        current_time += gap_duration
                 else:
                     print(f"Failed to save audio for line {line['index']}")
             else:
@@ -130,7 +135,8 @@ class DialogueTTS:
         )
         
         # Merge individual audio files into a single output.mp3
-        merged_audio_path = merge_audio_files(dialogue_audio_dir, dialog_id, dialogue_dir)
+        gap_duration = get_audio_gap_duration()
+        merged_audio_path = merge_audio_files(dialogue_audio_dir, dialog_id, dialogue_dir, gap_duration)
         if merged_audio_path:
             output["merged_audio_file"] = "output.mp3"
         
